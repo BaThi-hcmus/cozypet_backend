@@ -6,9 +6,6 @@ export type AccountDocument = Account & Document;
 @Schema({ timestamps: true })
 export class Account {
   @Prop({ require: true, unique: true })
-  userName: string;
-
-  @Prop({ require: true, uniqure: true })
   email: string;
 
   @Prop({ require: true })
