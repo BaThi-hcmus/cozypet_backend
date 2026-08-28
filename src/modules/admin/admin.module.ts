@@ -4,7 +4,9 @@ import { AccountModule } from "./account/account.module";
 @Module({
   imports: [
     AccountModule,
-  ]
+  ],
+  controllers: [],
+  providers: []
 })
 
 export class AdminModule { };
