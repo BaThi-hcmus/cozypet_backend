@@ -28,4 +28,8 @@ export class UpdateAccountDto {
   @IsOptional()
   @IsNumber({}, { message: 'Lương phải là kiểu số' })
   salary?: number;
+
+  @IsOptional()
+  @IsEnum(['active', 'inactive'], { message: 'Trạng thái chỉ có thể là active hoặc inactive' })
+  status?: string;
 }

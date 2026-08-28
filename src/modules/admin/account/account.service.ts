@@ -107,7 +107,8 @@ export class AccountService {
     const { email, password, ...rest } = createAccountDto;
 
     // Kiểm tra email trùng
-    const accountExist = await this.accountModel.findOne({ email: email, deleted: false });
+    // kiểm tra cả những bản ghi đã xóa mềm, vì email được gán unique
+    const accountExist = await this.accountModel.findOne({ email: email });
     if (accountExist) {
       throw new ConflictException('Email này đã được sử dụng bởi tài khoản khác');
     }
@@ -163,5 +164,21 @@ export class AccountService {
       throw new NotFoundException('Tài khoản không tồn tại');
     }
     return account;
+  }
+
+  async deleteAccount(id: string): Promise<void> {
+    // kiểm tra account có tồn tại không 
+    const accountExist = await this.accountModel.findOne({
+      _id: id,
+      deleted: false
+    })
+    if (!accountExist) {
+      throw new NotFoundException('Tài khoản cần xóa không tồn tại');
+    }
+
+    await this.accountModel.updateOne(
+      { _id: id },
+      { deleted: true }
+    )
   }
 }

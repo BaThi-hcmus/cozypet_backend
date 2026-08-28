@@ -9,4 +9,4 @@ import { Sort } from "src/utils/sort.util";
   exports: [FilterStatus, Search, Pagination, Sort],
 })
 
-export class SharedAdminModule { };
+export class ToolBarModule { };
