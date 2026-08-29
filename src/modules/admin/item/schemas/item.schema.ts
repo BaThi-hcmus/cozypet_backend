@@ -41,6 +41,12 @@ export class Item {
   })
   slotType: string;
 
+  @Prop({ default: 0 })
+  zIndex: number;
+
+  @Prop({ default: 1 })
+  scaleFactor: number;
+
   @Prop({ default: false })
   deleted: boolean;
 }

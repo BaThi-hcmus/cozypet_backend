@@ -40,4 +40,12 @@ export class CreateItemDto {
   @IsOptional()
   @IsString()
   slotType?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'zIndex phải là kiểu số' })
+  zIndex?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'scaleFactor phải là kiểu số' })
+  scaleFactor?: number;
 }
