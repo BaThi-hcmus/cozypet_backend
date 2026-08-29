@@ -1,9 +1,10 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Account, AccountDocument } from './schemas/account.schema';
 import { CreateAccountDto } from './dtos/create.account.dto';
 import { UpdateAccountDto } from './dtos/update.account.dto';
+import { BulkActionDto } from './dtos/bulk.account.dto';
 import * as bcrypt from 'bcrypt'
 import { FilterStatus } from 'src/utils/filterStatus.util';
 import { Search } from 'src/utils/search.util';
@@ -86,6 +87,30 @@ export class AccountService {
     // Phân trang
     const paginationObj = await this.paginationService.pagination(page, queryCondition, this.accountModel);
 
+    // Bulk action
+    const bulkActions = [
+      {
+        name: "Hoạt động",
+        value: {
+          type: "status-active",
+          payload: { status: "active" }
+        }
+      },
+      {
+        name: "Dừng hoạt động",
+        value: {
+          type: "status-inactive",
+          payload: { status: "inactive" }
+        }
+      },
+      {
+        name: "Xóa",
+        value: {
+          type: "delete",
+          payload: { deleted: true }
+        }
+      }
+    ]
     const accounts = await this.accountModel
       .find(queryCondition)
       .select('-password')
@@ -99,7 +124,8 @@ export class AccountService {
       keyword: keyword,
       sortType: sortType,
       sortList: sortList,
-      paginationObj: paginationObj
+      paginationObj: paginationObj,
+      bulkActions: bulkActions
     }
   }
 
@@ -179,6 +205,26 @@ export class AccountService {
     await this.accountModel.updateOne(
       { _id: id },
       { deleted: true }
+    )
+  }
+
+  async bulkAccount(bulkActionDto: BulkActionDto): Promise<void> {
+    if (!bulkActionDto.ids || bulkActionDto.ids.length == 0) {
+      throw new ConflictException('Không tồn tại id của các bản ghi cần cập nhật');
+    }
+
+    // kiểm tra xem có id nào không tồn tại trong DB không
+    const existCount = await this.accountModel.countDocuments({
+      _id: { $in: bulkActionDto.ids }
+    })
+    if (existCount != bulkActionDto.ids.length) {
+      throw new BadRequestException('Có một id không tồn tại trong hệ thống');
+    }
+
+    // Cập nhật
+    await this.accountModel.updateMany(
+      { _id: { $in: bulkActionDto.ids } },
+      bulkActionDto.payload
     )
   }
 }

@@ -4,6 +4,7 @@ import { CreateAccountDto } from './dtos/create.account.dto';
 import { UpdateAccountDto } from './dtos/update.account.dto';
 import { CloudinaryService } from 'src/shared/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { BulkActionDto } from './dtos/bulk.account.dto';
 
 @Controller('admin/accounts')
 export class AccountController {
@@ -46,7 +47,21 @@ export class AccountController {
   }
 
   @Patch('update/:id')
-  async updateAccount(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
+  @UseInterceptors(FileInterceptor('avatar')) // có nhiệm vụ bắt File ảnh từ frontend gửi qua
+  async updateAccount(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+    @Body() updateAccountDto: UpdateAccountDto
+  ) {
+    if (file) {
+      try {
+        const uploadResult = await this.cloudinaryService.uploadFile(file);
+        updateAccountDto.avatar = uploadResult.secure_url;
+      } catch (error) {
+        throw new Error('Upload ảnh lên cloudinary thất bại');
+      }
+    }
+
     await this.accountService.updateAccount(id, updateAccountDto);
     return {
       message: 'Cập nhật tài khoản thành công'
@@ -67,6 +82,14 @@ export class AccountController {
     await this.accountService.deleteAccount(id);
     return {
       message: 'Xóa tài khoản thành công'
+    }
+  }
+
+  @Patch('bulk-actions')
+  async bulkAccount(@Body() bulkActionDto: BulkActionDto) {
+    await this.accountService.bulkAccount(bulkActionDto);
+    return {
+      message: 'Đã cập nhật thành công các bản ghi'
     }
   }
 }
