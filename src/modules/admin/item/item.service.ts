@@ -9,6 +9,7 @@ import { FilterStatus } from 'src/utils/filterStatus.util';
 import { Search } from 'src/utils/search.util';
 import { Pagination } from 'src/utils/pagination.util';
 import { Sort } from 'src/utils/sort.util';
+import { ITEM_CONSTANTS_RESPONSE } from 'src/constants/item.constants';
 
 @Injectable()
 export class ItemService {
@@ -179,5 +180,12 @@ export class ItemService {
       { _id: { $in: bulkItemActionDto.ids } },
       bulkItemActionDto.payload,
     );
+  }
+
+  getItemConstants() {
+    return {
+      data: ITEM_CONSTANTS_RESPONSE,
+      message: 'Lấy cấu hình item constants thành công',
+    };
   }
 }

@@ -80,6 +80,11 @@ export class ItemController {
     };
   }
 
+  @Get('constants')
+  getItemConstants() {
+    return this.itemService.getItemConstants();
+  }
+
   @Get('detail/:id')
   async getDetailItem(@Param('id') id: string) {
     const result = await this.itemService.detailItem(id);

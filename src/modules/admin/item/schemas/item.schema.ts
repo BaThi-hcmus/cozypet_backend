@@ -1,5 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import {
+  ITEM_CATEGORY_VALUES,
+  ITEM_SLOT_TYPE_VALUES,
+  ITEM_TYPE_VALUES,
+} from 'src/constants/item.constants';
 
 export type ItemDocument = Item & Document;
 
@@ -10,11 +15,11 @@ export class Item {
 
   @Prop({
     required: true,
-    enum: ['furniture', 'decoration', 'food', 'toy'],
+    enum: ITEM_TYPE_VALUES,
   })
   type: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, enum: ITEM_CATEGORY_VALUES })
   category: string;
 
   @Prop({ required: true })
@@ -36,16 +41,14 @@ export class Item {
   status: string;
 
   @Prop({
+    required: true,
+    enum: ITEM_SLOT_TYPE_VALUES,
     default: 'center_floor',
     trim: true,
   })
   slotType: string;
 
-  @Prop({ default: 0 })
-  zIndex: number;
 
-  @Prop({ default: 1 })
-  scaleFactor: number;
 
   @Prop({ default: false })
   deleted: boolean;

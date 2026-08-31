@@ -1,4 +1,9 @@
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  ITEM_CATEGORY_VALUES,
+  ITEM_SLOT_TYPE_VALUES,
+  ITEM_TYPE_VALUES,
+} from 'src/constants/item.constants';
 
 export class UpdateItemDto {
   @IsOptional()
@@ -6,13 +11,15 @@ export class UpdateItemDto {
   name?: string;
 
   @IsOptional()
-  @IsEnum(['furniture', 'decoration', 'food', 'toy'], {
-    message: 'Loại vật phẩm chỉ có thể là furniture, decoration, food hoặc toy',
+  @IsIn(ITEM_TYPE_VALUES, {
+    message: 'Loại vật phẩm không hợp lệ',
   })
   type?: string;
 
   @IsOptional()
-  @IsString()
+  @IsIn(ITEM_CATEGORY_VALUES, {
+    message: 'Danh mục không hợp lệ',
+  })
   category?: string;
 
   @IsOptional()
@@ -42,14 +49,10 @@ export class UpdateItemDto {
   deleted?: boolean;
 
   @IsOptional()
-  @IsString()
+  @IsIn(ITEM_SLOT_TYPE_VALUES, {
+    message: 'Vị trí đặt (slotType) không hợp lệ',
+  })
   slotType?: string;
 
-  @IsOptional()
-  @IsNumber({}, { message: 'zIndex phải là kiểu số' })
-  zIndex?: number;
 
-  @IsOptional()
-  @IsNumber({}, { message: 'scaleFactor phải là kiểu số' })
-  scaleFactor?: number;
 }

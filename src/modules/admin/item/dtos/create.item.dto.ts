@@ -1,4 +1,9 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  ITEM_CATEGORY_VALUES,
+  ITEM_SLOT_TYPE_VALUES,
+  ITEM_TYPE_VALUES,
+} from 'src/constants/item.constants';
 
 export class CreateItemDto {
   @IsNotEmpty({ message: 'Tên vật phẩm không được để trống' })
@@ -6,13 +11,15 @@ export class CreateItemDto {
   name: string;
 
   @IsNotEmpty({ message: 'Loại vật phẩm không được để trống' })
-  @IsEnum(['furniture', 'decoration', 'food', 'toy'], {
-    message: 'Loại vật phẩm chỉ có thể là furniture, decoration, food hoặc toy',
+  @IsIn(ITEM_TYPE_VALUES, {
+    message: 'Loại vật phẩm không hợp lệ',
   })
   type: string;
 
   @IsNotEmpty({ message: 'Danh mục không được để trống' })
-  @IsString()
+  @IsIn(ITEM_CATEGORY_VALUES, {
+    message: 'Danh mục không hợp lệ',
+  })
   category: string;
 
   @IsOptional()
@@ -37,15 +44,11 @@ export class CreateItemDto {
   })
   status?: string;
 
-  @IsOptional()
-  @IsString()
-  slotType?: string;
+  @IsNotEmpty({ message: 'Vị trí đặt (slotType) không được để trống' })
+  @IsIn(ITEM_SLOT_TYPE_VALUES, {
+    message: 'Vị trí đặt (slotType) không hợp lệ',
+  })
+  slotType: string;
 
-  @IsOptional()
-  @IsNumber({}, { message: 'zIndex phải là kiểu số' })
-  zIndex?: number;
 
-  @IsOptional()
-  @IsNumber({}, { message: 'scaleFactor phải là kiểu số' })
-  scaleFactor?: number;
 }
