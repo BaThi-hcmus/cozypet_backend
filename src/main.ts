@@ -1,10 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const cors = require('cors');
+
+  // dùng lấy dữ liệu trong cookie
+  app.use(cookieParser());
 
   app.use(cors({
     origin: 'http://localhost:5173', // Hoặc dùng true để cho phép mọi nguồn trong môi trường dev
