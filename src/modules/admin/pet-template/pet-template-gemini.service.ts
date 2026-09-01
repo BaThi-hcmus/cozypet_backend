@@ -38,10 +38,10 @@ export class PetTemplateGeminiService {
     species: 'dog' | 'cat',
   ): Promise<PetCharacteristics> {
     const model = this.geminiAi.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      },
+      model: 'gemini-flash-lite-latest',
+      // generationConfig: {
+      //   responseMimeType: 'application/json',
+      // },
     });
 
     const prompt = `
