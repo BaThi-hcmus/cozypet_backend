@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
+import { PartConfig, PartConfigSchema } from './part-config.schema';
+import { Offset } from './offset.schema';
 
 export type PetTemplateDocument = PetTemplate & Document;
 
@@ -16,6 +18,19 @@ export class PetTemplate {
 
   @Prop({ required: true })
   avatar: string;
+
+  @Prop({ required: true })
+  globalZoom: number;
+
+  @Prop({ required: true })
+  globalOffset: Offset;
+
+  @Prop({
+    type: Map,
+    of: PartConfigSchema,
+    default: {},
+  })
+  layers: Record<string, PartConfig>;
 
   @Prop({ required: true, trim: true })
   primaryColor: string;

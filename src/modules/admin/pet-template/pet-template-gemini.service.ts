@@ -1,24 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-export interface PetTemplateTraits {
-  earShape?: string | null;
-  faceShape?: string | null;
-  eyeColor?: string | null;
-  size?: string | null;
-  earType?: string | null;
-  muzzleShape?: string | null;
-  tailType?: string | null;
-}
-
-export interface PetCharacteristics {
-  primaryColor: string;
-  secondaryColor: string;
-  coatPattern: string;
-  coatLength: string;
-  traits: PetTemplateTraits;
-}
+import { PetCharacteristics } from './interfaces/petCharacteristics.interface';
 
 @Injectable()
 export class PetTemplateGeminiService {
@@ -37,11 +20,10 @@ export class PetTemplateGeminiService {
     mimeType: string, // định dạng tệp
     species: 'dog' | 'cat',
   ): Promise<PetCharacteristics> {
+    // giới hạn của mô hình gemini-flash-lite-latest: 
+    // 15 request/ phút, khoảng 1500 request/ ngày
     const model = this.geminiAi.getGenerativeModel({
       model: 'gemini-flash-lite-latest',
-      // generationConfig: {
-      //   responseMimeType: 'application/json',
-      // },
     });
 
     const prompt = `

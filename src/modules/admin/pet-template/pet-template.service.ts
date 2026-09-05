@@ -15,11 +15,8 @@ import { Search } from 'src/utils/search.util';
 import { Pagination } from 'src/utils/pagination.util';
 import { Sort } from 'src/utils/sort.util';
 import { PetTemplateGeminiService } from './pet-template-gemini.service';
-
-interface UploadedImageFile {
-  buffer: Buffer;
-  mimetype: string;
-}
+import { instanceToPlain } from 'class-transformer';
+import { UploadedImageFile } from './interfaces/uploadedImageFile.interface';
 
 @Injectable()
 export class PetTemplateService {
@@ -31,7 +28,7 @@ export class PetTemplateService {
     private readonly paginationService: Pagination,
     private readonly sortService: Sort,
     private readonly petTemplateGeminiService: PetTemplateGeminiService,
-  ) {}
+  ) { }
 
   async getAll(
     status: string,
@@ -132,8 +129,10 @@ export class PetTemplateService {
       createPetTemplateDto.species as 'dog' | 'cat',
     );
 
+    // biến toàn bộ DTO thành object thuần của JS
+    const plainData = instanceToPlain(createPetTemplateDto);
     const newPetTemplate = new this.petTemplateModel({
-      ...createPetTemplateDto,
+      ...plainData,
       ...characteristics,
     });
     await newPetTemplate.save();
