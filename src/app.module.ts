@@ -3,8 +3,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AdminModule } from './modules/admin/admin.module';
-import { ClientModule } from './modules/client/client.module';
+import { AccountModule } from './modules/account/account.module';
+import { ItemModule } from './modules/item/item.module';
+import { PetModule } from './modules/pet/pet.module';
+import { RoomModule } from './modules/room/room.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -22,8 +25,11 @@ import { ClientModule } from './modules/client/client.module';
       inject: [ConfigService],
     }),
 
-    AdminModule,
-    ClientModule
+    AccountModule,
+    ItemModule,
+    PetModule,
+    RoomModule,
+    UserModule
   ],
   controllers: [AppController],
   providers: [AppService],
