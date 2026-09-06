@@ -23,7 +23,7 @@ import { ClientModule } from './modules/client/client.module';
     }),
 
     AdminModule,
-    // ClientModule
+    ClientModule
   ],
   controllers: [AppController],
   providers: [AppService],

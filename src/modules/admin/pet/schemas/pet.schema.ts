@@ -6,20 +6,20 @@ export type PetDocument = Pet & Document;
 @Schema({ timestamps: true, collection: 'pets' })
 export class Pet {
   @Prop({ required: true })
-  userId: string;
+  userId!: string;
 
   @Prop({ required: true })
-  petTemplateId: string;
+  petTemplateId!: string;
 
   @Prop({ required: true })
-  name: string;
+  name!: string;
 
   // Gồm năng lượng, chỉ số đói và hạnh phúc
-  @Prop()
-  status: Object;
+  @Prop({ type: Object })
+  status!: Record<string, any>;
 
   @Prop({ default: false })
-  deleted: boolean;
+  deleted!: boolean;
 }
 
 export const PetSchema = SchemaFactory.createForClass(Pet);
