@@ -18,6 +18,9 @@ export class Room {
   @Prop({ required: true })
   background_url: string; // Đường dẫn ảnh nền căn phòng
 
+  @Prop({ required: true })
+  isDefault: boolean;
+
   // Danh sách các slot gắn đồ trong phòng
   @Prop({ type: Object, default: {} })
   slots: Record<string, RoomSlot>;

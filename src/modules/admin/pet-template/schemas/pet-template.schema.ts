@@ -26,9 +26,7 @@ export class PetTemplate {
   globalOffset: Offset;
 
   @Prop({
-    type: Map,
-    of: PartConfigSchema,
-    default: {},
+    type: Object
   })
   layers: Record<string, PartConfig>;
 

@@ -85,6 +85,19 @@ export class ItemController {
     return this.itemService.getItemConstants();
   }
 
+  @Get('compatible')
+  async getCompatibleItems(
+    @Query('type') type: string,
+    @Query('category') category: string,
+    @Query('slotType') slotType: string,
+  ) {
+    const items = await this.itemService.getCompatibleItems(type, category, slotType);
+    return {
+      data: items,
+      message: 'Lấy thành công các vật phẩm theo bộ lọc',
+    };
+  }
+
   @Get('detail/:id')
   async getDetailItem(@Param('id') id: string) {
     const result = await this.itemService.detailItem(id);

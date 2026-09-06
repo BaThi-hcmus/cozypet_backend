@@ -16,7 +16,7 @@ export class OnboardingService {
         }
 
         await this.petModel.create({
-            guestId: guestId,
+            userId: guestId,
             ...createPetDto
         });
     }

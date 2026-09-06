@@ -1,7 +1,8 @@
-import { IsEnum, IsIn, IsOptional, IsString, IsObject, ValidateNested } from 'class-validator';
+import { IsEnum, IsIn, IsOptional, IsString, IsObject, ValidateNested, IsNumber } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { PartConfigDto } from './part-config.dto';
 import { LayersConfigDto } from './layers-config.dto';
+import { OffsetDto } from './offset.dto';
 
 export class UpdatePetTemplateDto {
   @IsOptional()
@@ -74,4 +75,29 @@ export class UpdatePetTemplateDto {
   @IsOptional()
   @IsEnum(['active', 'inactive'])
   deleted?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => (value != undefined ? Number(value) : value))
+  @IsNumber({}, { message: 'global zoom phải là số nguyên' })
+  globalZoom?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value == 'string') {
+      console.log(value);
+      try {
+        const parse = JSON.parse(value);
+        console.log('Parsed thành công:', parse);
+        return plainToInstance(OffsetDto, parse);
+      } catch (error) {
+        console.error('JSON.parse bị lỗi:', error);
+        return value;
+      }
+    }
+    return value;
+  })
+  @IsObject({ message: 'Global offset phải là một object' })
+  @ValidateNested()
+  @Type(() => OffsetDto)
+  globalOffset?: OffsetDto;
 }

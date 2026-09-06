@@ -4,6 +4,7 @@ import { ItemModule } from './item/item.module';
 import { RoomModule } from './room/room.module';
 import { PetModule } from './pet/pet.module';
 import { PetTemplateModule } from './pet-template/pet-template.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { PetTemplateModule } from './pet-template/pet-template.module';
     RoomModule,
     PetModule,
     PetTemplateModule,
+    UserModule,
   ],
   controllers: [],
   providers: []

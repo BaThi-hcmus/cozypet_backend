@@ -9,31 +9,31 @@ import {
 @Schema({ _id: false })
 export class RoomSlot {
   @Prop({ required: true })
-  x: number; // Tọa độ ngang trên màn hình phòng
+  x: number;
 
   @Prop({ required: true })
-  y: number; // Tọa độ dọc trên màn hình phòng
+  y: number;
 
   @Prop({
     required: true,
     enum: ITEM_TYPE_VALUES,
   })
-  type: string; // Loại item tương ứng
+  type: string;
 
   @Prop({ required: true, trim: true, enum: ITEM_CATEGORY_VALUES })
-  category: string; // Danh mục (bàn, ghế, tủ,...)
+  category: string;
 
   @Prop({ required: true, trim: true, enum: ITEM_SLOT_TYPE_VALUES })
-  slotType: string; // Vị trí chi tiết (left_floor, right_wall,...)
+  slotType: string;
 
   @Prop({ default: 0 })
-  zIndex: number; // Thứ tự lớp hiển thị (layer)
+  zIndex: number;
 
   @Prop({ default: 1 })
-  scaleFactor: number; // Tỉ lệ phóng to thu nhỏ của item trong phòng
+  scaleFactor: number;
 
   @Prop({ type: Types.ObjectId, ref: 'Item', default: null })
-  defaultItemId: Types.ObjectId; // ID món đồ mặc định sẵn trong phòng
+  defaultItemId: Types.ObjectId;
 }
 
 export const RoomSlotSchema = SchemaFactory.createForClass(RoomSlot);

@@ -188,4 +188,17 @@ export class ItemService {
       message: 'Lấy cấu hình item constants thành công',
     };
   }
+
+  async getCompatibleItems(type: string, category: string, slotType: string): Promise<ItemDocument[]> {
+    // lấy theo type, category, slotType
+    const items = await this.itemModel.find({
+      type: type,
+      category: category,
+      slotType: slotType,
+      status: 'active',
+      deleted: false
+    });
+
+    return items;
+  }
 }
