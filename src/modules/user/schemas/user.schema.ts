@@ -20,6 +20,12 @@ export class User {
   @Prop()
   avatar: string;
 
+  @Prop()
+  refreshToken: string;
+
+  @Prop()
+  refreshTokenExpiresAt: Date;
+
   @Prop({
     enum: ['active', 'inactive'],
     default: 'active'

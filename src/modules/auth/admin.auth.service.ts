@@ -43,4 +43,11 @@ export class AdminAuthService {
     )
     return sessionId;
   }
+
+  async logout(id: string): Promise<void> {
+    await this.accountModel.updateOne(
+      { _id: id },
+      { sessionId: null }
+    )
+  }
 }

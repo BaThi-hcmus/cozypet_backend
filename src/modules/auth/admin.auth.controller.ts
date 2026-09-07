@@ -39,4 +39,24 @@ export class AdminAuthController {
       message: 'Lấy thông tin tài khoản thành công'
     }
   }
+
+  @UseGuards(AdminAuthGuard)
+  @Post('logout')
+  async logout(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: express.Response
+  ) {
+    await this.authService.logout(req.req.info._id);
+
+    res.clearCookie('sessionId', {
+      httpOnly: true, // chống tấn công XSS
+      sameSite: 'lax', // 'lax' cho phép cookie gửi kèm trong cùng origin (localhost)
+      secure: false, // false cho môi trường dev (HTTP), nếu set là true thì chỉ gửi được bằng HTTPS
+      path: '/' // gửi kèm cookie ở toàn bộ đường dẫn
+    })
+
+    return {
+      message: 'Logout thành công'
+    }
+  }
 }
