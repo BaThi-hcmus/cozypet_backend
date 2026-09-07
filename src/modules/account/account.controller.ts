@@ -1,11 +1,16 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create.account.dto';
 import { UpdateAccountDto } from './dtos/update.account.dto';
 import { CloudinaryService } from 'src/shared/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BulkActionDto } from './dtos/bulk.account.dto';
+import { AdminAuthGuard } from '../auth/guards/admin.auth.guard';
+import { AdminRolesGuard } from '../auth/guards/admin.role.guard';
+import { Roles } from '../auth/decorators/admin.role.decorator';
 
+@UseGuards(AdminAuthGuard, AdminRolesGuard)
+@Roles('admin')
 @Controller('admin/accounts')
 export class AccountController {
   constructor(

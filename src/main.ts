@@ -11,7 +11,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.use(cors({
-    origin: 'http://localhost:5173', // Hoặc dùng true để cho phép mọi nguồn trong môi trường dev
+    origin: ['http://localhost:5173', 'http://localhost:5174'], // Hỗ trợ cả 2 port dev
     credentials: true // Cho phép nhận cookie/token nếu có
   }));
 

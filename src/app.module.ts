@@ -8,6 +8,7 @@ import { ItemModule } from './modules/item/item.module';
 import { PetModule } from './modules/pet/pet.module';
 import { RoomModule } from './modules/room/room.module';
 import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { UserModule } from './modules/user/user.module';
     ItemModule,
     PetModule,
     RoomModule,
-    UserModule
+    UserModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

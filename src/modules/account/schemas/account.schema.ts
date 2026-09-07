@@ -8,6 +8,9 @@ export class Account {
   @Prop({ require: true, unique: true })
   email: string;
 
+  @Prop()
+  sessionId: string;
+
   @Prop({ require: true })
   password: string;
 
