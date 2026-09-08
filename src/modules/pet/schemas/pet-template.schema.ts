@@ -1,46 +1,46 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { PartConfig, PartConfigSchema } from './part-config.schema';
-import { Offset } from './offset.schema';
+import { PartConfig, PartConfigSchema } from './part-config.pet-template.schema';
+import { Offset } from './offset.pet-template.schema';
 
 export type PetTemplateDocument = PetTemplate & Document;
 
 @Schema({ timestamps: true, collection: 'pet_templates' })
 export class PetTemplate {
   @Prop({ required: true, unique: true, trim: true })
-  templateId: string;
+  templateId!: string;
 
   @Prop({ required: true, enum: ['dog', 'cat'] })
-  species: string;
+  species!: string;
 
   @Prop({ required: true, trim: true })
-  name: string;
+  name!: string;
 
   @Prop({ required: true })
-  avatar: string;
+  avatar!: string;
 
   @Prop({ required: true })
-  globalZoom: number;
+  globalZoom!: number;
 
   @Prop({ required: true })
-  globalOffset: Offset;
+  globalOffset!: Offset;
 
   @Prop({
     type: Object
   })
-  layers: Record<string, PartConfig>;
+  layers!: Record<string, PartConfig>;
 
   @Prop({ required: true, trim: true })
-  primaryColor: string;
+  primaryColor!: string;
 
   @Prop({ default: 'none', trim: true })
-  secondaryColor: string;
+  secondaryColor!: string;
 
   @Prop({ required: true, trim: true })
-  coatPattern: string;
+  coatPattern!: string;
 
   @Prop({ required: true, trim: true })
-  coatLength: string;
+  coatLength!: string;
 
   @Prop({
     type: {
@@ -55,7 +55,7 @@ export class PetTemplate {
     _id: false,
     default: {},
   })
-  traits: {
+  traits!: {
     earShape?: string;
     faceShape?: string;
     eyeColor?: string;
@@ -69,10 +69,10 @@ export class PetTemplate {
     enum: ['active', 'inactive'],
     default: 'active',
   })
-  status: string;
+  status!: string;
 
   @Prop({ default: false })
-  deleted: boolean;
+  deleted!: boolean;
 }
 
 export const PetTemplateSchema = SchemaFactory.createForClass(PetTemplate);

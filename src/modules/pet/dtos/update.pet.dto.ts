@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsNumber, ValidateNested } from 'class-validator';
-import { StatusDto } from './status.dto';
+import { StatusDto } from './status.pet.dto';
 
 export class UpdatePetDto {
   @IsString()

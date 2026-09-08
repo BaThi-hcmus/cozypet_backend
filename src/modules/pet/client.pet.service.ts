@@ -55,10 +55,18 @@ export class ClientPetService {
       throw new InternalServerErrorException('Gemini trả ra id không tồn tại trong hệ thống');
     }
 
+    // Đảm bảo chỉ có 1 pet isCurrent cho 1 user tại 1 thời điểm
+    // Đặt tất cả pet cũ của user này thành isCurrent = false trước khi tạo mới
+    await this.petModel.updateMany(
+      { userId: userId, isCurrent: true, deleted: false },
+      { $set: { isCurrent: false } }
+    );
+
     // lưu vào cơ sở dữ liệu với status mặc định
     const newPet = await this.petModel.create({
       userId: userId,
       petTemplateId: petTemplateId,
+      isCurrent: true,
       status: {
         hunger: 100,
         energy: 100,
@@ -112,7 +120,7 @@ export class ClientPetService {
   ): Promise<any> {
     const pet = await this.petModel.findOne({
       userId: userId,
-      isSelected: true as any,
+      isCurrent: true,
       deleted: false
     })
     if (!pet) {

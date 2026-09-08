@@ -15,8 +15,8 @@ export class Pet {
   @Prop({ type: String })
   name: string;
 
-  @Prop({ type: Boolean, default: true })
-  isSelected!: boolean;
+  @Prop({ default: true })
+  isCurrent: boolean;
 
   @Prop({ type: Number, default: 1 })
   level: number;

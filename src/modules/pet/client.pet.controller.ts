@@ -54,13 +54,8 @@ export class ClientPetController {
   @Get('my-current-pet')
   @UseGuards(AccessTokenGuard)
   async getMyPet(
-    @Param('petId') petId: string,
     @Req() req: Request
   ) {
-    if (!petId) {
-      throw new BadRequestException('Vui lòng cung cấp id pet');
-    }
-
     const userId = req['user'].sub;
     if (!userId) {
       throw new UnauthorizedException('Phiên đăng nhập đã hết hạn');
