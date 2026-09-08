@@ -1,8 +1,8 @@
 import { IsIn, IsNotEmpty, IsOptional, IsString, IsObject, ValidateNested, IsNumber } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
-import { PartConfigDto } from './part-config.dto';
-import { LayersConfigDto } from './layers-config.dto';
-import { OffsetDto } from './offset.dto';
+import { PartConfigDto } from './part-config.pet-template.dto';
+import { LayersConfigDto } from './layers-config.pet-template.dto';
+import { OffsetDto } from './offset.pet-template.dto';
 
 export class CreatePetTemplateDto {
   @IsNotEmpty({ message: 'Mã template không được để trống' })

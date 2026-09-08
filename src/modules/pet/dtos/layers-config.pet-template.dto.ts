@@ -1,6 +1,6 @@
 import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PartConfigDto } from './part-config.dto';
+import { PartConfigDto } from './part-config.pet-template.dto';
 
 export class LayersConfigDto {
   @IsOptional()

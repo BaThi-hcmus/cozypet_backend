@@ -11,16 +11,20 @@ import { ClientPetService } from './client.pet.service';
 import { ClientPetGeminiService } from './client.pet-gemini.service';
 import { CloudinaryModule } from 'src/shared/cloudinary/cloudinary.module';
 import { ToolBarModule } from 'src/shared/toolbar/toolbar.module';
+import { User, UserSchema } from '../user/schemas/user.schema';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: PetTemplate.name, schema: PetTemplateSchema },
-      { name: Pet.name, schema: PetSchema }
+      { name: Pet.name, schema: PetSchema },
+      { name: User.name, schema: UserSchema }
     ]),
     ConfigModule,
     CloudinaryModule,
-    ToolBarModule
+    ToolBarModule,
+    AuthModule
   ],
   controllers: [AdminPetController, ClientPetController],
   providers: [

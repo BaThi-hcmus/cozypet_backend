@@ -1,24 +1,33 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { PetStatus } from './status.pet.schema';
 
 export type PetDocument = Pet & Document;
 
 @Schema({ timestamps: true, collection: 'pets' })
 export class Pet {
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   userId!: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   petTemplateId!: string;
 
-  @Prop({ required: true })
-  name!: string;
+  @Prop({ type: String })
+  name: string;
 
-  // Gồm năng lượng, chỉ số đói và hạnh phúc
-  @Prop({ type: Object })
-  status!: Record<string, any>;
+  @Prop({ type: Boolean, default: true })
+  isSelected!: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Number, default: 1 })
+  level: number;
+
+  @Prop({ type: Number, default: 0 })
+  exp: number;
+
+  @Prop({ type: PetStatus })
+  status!: PetStatus;
+
+  @Prop({ type: Boolean, default: false })
   deleted!: boolean;
 }
 
