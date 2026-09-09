@@ -9,6 +9,7 @@ import {
   Query,
   UploadedFile,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -18,7 +19,12 @@ import { UpdatePetTemplateDto } from './dtos/update.pet-template.dto';
 import { BulkPetTemplateActionDto } from './dtos/bulk.pet-template.dto';
 import { CloudinaryService } from 'src/shared/cloudinary/cloudinary.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { AdminAuthGuard } from '../auth/guards/admin.auth.guard';
+import { AdminRolesGuard } from '../auth/guards/admin.role.guard';
+import { Roles } from '../auth/decorators/admin.role.decorator';
 
+@UseGuards(AdminAuthGuard, AdminRolesGuard)
+@Roles('admin')
 @Controller('admin/pet-templates')
 export class AdminPetController {
   constructor(
@@ -152,7 +158,7 @@ export class AdminPetController {
     const uploadTasks: any = [];
 
     // xử lý avatar (nếu có upload file mới)
-    if (files.avatar && files.avatar[0]) {
+    if (files?.avatar && files?.avatar?.[0]) {
       const avatarPromise = this.cloudinaryService
         .uploadFile(files.avatar[0])
         .then((res) => {
@@ -172,7 +178,7 @@ export class AdminPetController {
 
     // upload các bộ phận (nếu admin có upload file mới)
     for (const part of parts) {
-      if (files[part] && files[part][0]) {
+      if (files?.[part] && files?.[part]?.[0]) {
         const partPromise = this.cloudinaryService
           .uploadFile(files[part][0])
           .then((res) => {

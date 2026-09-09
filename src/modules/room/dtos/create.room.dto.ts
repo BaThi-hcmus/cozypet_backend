@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateRoomDto {
@@ -18,6 +18,13 @@ export class CreateRoomDto {
   })
   @IsBoolean({ message: 'Trường mặc định phải là kiểu boolean' })
   isDefault?: boolean;
+
+  @IsOptional()
+  @Transform(({value}) => {
+    return Number(value);
+  })
+  @IsNumber({}, {message: 'Giá phòng phải là số'})
+  price?: number;
 
   @IsOptional()
   @IsString()

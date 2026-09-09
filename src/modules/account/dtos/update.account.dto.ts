@@ -7,7 +7,7 @@ export class UpdateAccountDto {
 
   @IsOptional()
   @IsString()
-  password: string;
+  password?: string;
 
   @IsOptional()
   @IsString()

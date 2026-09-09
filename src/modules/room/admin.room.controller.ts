@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AdminRoomService } from './admin.room.service';
@@ -16,7 +17,12 @@ import { UpdateRoomDto } from './dtos/update.room.dto';
 import { BulkRoomActionDto } from './dtos/bulk.room.dto';
 import { CloudinaryService } from 'src/shared/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AdminAuthGuard } from '../auth/guards/admin.auth.guard';
+import { AdminRolesGuard } from '../auth/guards/admin.role.guard';
+import { Roles } from '../auth/decorators/admin.role.decorator';
 
+@UseGuards(AdminAuthGuard, AdminRolesGuard)
+@Roles('admin')
 @Controller('admin/rooms')
 export class AdminRoomController {
   constructor(
@@ -90,6 +96,7 @@ export class AdminRoomController {
         throw new BadRequestException('Trường slots phải là định dạng JSON hợp lệ');
       }
     }
+    console.log(updateRoomDto);
 
     await this.roomService.updateRoom(id, updateRoomDto);
     return {

@@ -15,16 +15,13 @@ export class AdminAuthController {
   ) {
     const sessionId = await this.authService.login(loginDto);
 
-    console.log('Setting cookie with sessionId:', sessionId);
-    console.log('NODE_ENV:', process.env.NODE_ENV);
-
     res.cookie('sessionId', sessionId, {
-      httpOnly: true, // chống tấn công XSS
-      sameSite: 'lax', // 'lax' cho phép cookie gửi kèm trong cùng origin (localhost)
-      secure: false, // false cho môi trường dev (HTTP), nếu set là true thì chỉ gửi được bằng HTTPS
-      maxAge: 24 * 60 * 60 * 1000, // 1 ngày
-      path: '/' // gửi kèm cookie ở toàn bộ đường dẫn
-    })
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      maxAge: 24 * 60 * 60 * 1000,
+      path: '/'
+    });
 
     return {
       message: 'Đăng nhập thành công',
@@ -49,11 +46,11 @@ export class AdminAuthController {
     await this.authService.logout(req.req.info._id);
 
     res.clearCookie('sessionId', {
-      httpOnly: true, // chống tấn công XSS
-      sameSite: 'lax', // 'lax' cho phép cookie gửi kèm trong cùng origin (localhost)
-      secure: false, // false cho môi trường dev (HTTP), nếu set là true thì chỉ gửi được bằng HTTPS
-      path: '/' // gửi kèm cookie ở toàn bộ đường dẫn
-    })
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      path: '/'
+    });
 
     return {
       message: 'Logout thành công'

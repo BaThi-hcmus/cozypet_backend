@@ -7,21 +7,23 @@ export type RoomDocument = Room & Document;
 @Schema({ timestamps: true, collection: 'rooms' })
 export class Room {
   @Prop({ required: true, trim: true })
-  name: string; // Tên phòng (ví dụ: Phòng cơ bản, phong cách tết,...)
+  name: string; 
 
   @Prop({ required: true, unique: true, trim: true })
-  code: string; // Mã định danh không dấu dạng slug (default_room, tet_room,...)
+  code: string; 
 
   @Prop({ trim: true, default: '' })
-  description: string; // Mô tả ngắn gọn
+  description: string; 
 
   @Prop({ required: true })
-  background_url: string; // Đường dẫn ảnh nền căn phòng
+  background_url: string; 
+
+  @Prop({default: 0})
+  price: number;
 
   @Prop({ required: true })
   isDefault: boolean;
 
-  // Danh sách các slot gắn đồ trong phòng
   @Prop({ type: Object, default: {} })
   slots: Record<string, RoomSlot>;
 

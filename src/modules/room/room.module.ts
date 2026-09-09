@@ -8,6 +8,7 @@ import { Room, RoomSchema } from './schemas/room.schema';
 import { Item, ItemSchema } from '../item/schemas/item.schema';
 import { ClientRoomService } from './client.room.service';
 import { ClientRoomController } from './client.room.controller';
+import { Account, AccountSchema } from '../account/schemas/account.schema';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { ClientRoomController } from './client.room.controller';
     CloudinaryModule,
     MongooseModule.forFeature([
       { name: Room.name, schema: RoomSchema },
-      { name: Item.name, schema: ItemSchema }
+      { name: Item.name, schema: ItemSchema },
+      { name: Account.name, schema: AccountSchema}
     ])
   ],
   controllers: [AdminRoomController, ClientRoomController],

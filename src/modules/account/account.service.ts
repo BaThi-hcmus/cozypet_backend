@@ -161,7 +161,9 @@ export class AccountService {
     }
 
     // xử lí password
-    if (updateAccountDto.password && updateAccountDto.password.trim().length > 0) {
+    if (!updateAccountDto.password || updateAccountDto.password.trim().length == 0) {
+      delete updateAccountDto.password;
+    } else {
       const saltRounds = 10;
       const hashPassword = await bcrypt.hash(updateAccountDto.password, saltRounds);
       updateAccountDto.password = hashPassword;

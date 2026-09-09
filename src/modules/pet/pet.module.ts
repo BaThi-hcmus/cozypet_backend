@@ -13,13 +13,15 @@ import { CloudinaryModule } from 'src/shared/cloudinary/cloudinary.module';
 import { ToolBarModule } from 'src/shared/toolbar/toolbar.module';
 import { User, UserSchema } from '../user/schemas/user.schema';
 import { AuthModule } from '../auth/auth.module';
+import { Account, AccountSchema } from '../account/schemas/account.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: PetTemplate.name, schema: PetTemplateSchema },
       { name: Pet.name, schema: PetSchema },
-      { name: User.name, schema: UserSchema }
+      { name: User.name, schema: UserSchema },
+      { name: Account.name, schema: AccountSchema }
     ]),
     ConfigModule,
     CloudinaryModule,

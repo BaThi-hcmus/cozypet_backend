@@ -84,13 +84,10 @@ export class UpdatePetTemplateDto {
   @IsOptional()
   @Transform(({ value }) => {
     if (typeof value == 'string') {
-      console.log(value);
       try {
         const parse = JSON.parse(value);
-        console.log('Parsed thành công:', parse);
         return plainToInstance(OffsetDto, parse);
       } catch (error) {
-        console.error('JSON.parse bị lỗi:', error);
         return value;
       }
     }

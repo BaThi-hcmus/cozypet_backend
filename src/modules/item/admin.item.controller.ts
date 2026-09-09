@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ItemService } from './admin.item.service';
@@ -15,7 +16,12 @@ import { UpdateItemDto } from './dtos/update.item.dto';
 import { BulkItemActionDto } from './dtos/bulk.item.dto';
 import { CloudinaryService } from 'src/shared/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AdminAuthGuard } from '../auth/guards/admin.auth.guard';
+import { AdminRolesGuard } from '../auth/guards/admin.role.guard';
+import { Roles } from '../auth/decorators/admin.role.decorator';
 
+@UseGuards(AdminAuthGuard, AdminRolesGuard)
+@Roles('admin')
 @Controller('admin/items')
 export class ItemController {
   constructor(
