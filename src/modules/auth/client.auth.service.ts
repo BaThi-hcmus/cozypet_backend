@@ -218,32 +218,28 @@ export class ClientAuthService {
 
   async getAllInfo(userId: string): Promise<any> {
     try {
+      const userObjectId = Types.ObjectId.isValid(userId)
+        ? new Types.ObjectId(userId)
+        : userId;
+
       const [user, pets, userRooms, userItems] = await Promise.all([
-        // lấy thông tin user
         this.userModel.findOne({
           _id: userId,
           status: 'active',
           deleted: false
         }).select('-password -refreshToken -refreshTokenExpiresAt -deleted'),
 
-        // lấy tấc cả pet của user
         this.petModel.find({
           userId: userId,
           deleted: false
         }),
 
-        // lấy tấc cả room của user
         this.userRoomModel.find({
-          userId: userId,
-          status: 'active',
-          deleted: false
+          userId: { $in: [userObjectId, userId] },
         }),
 
-        // lấy tấc cả item của user
         this.userItemModel.find({
-          userId: userId,
-          status: 'active',
-          deleted: false
+          userId: { $in: [userObjectId, userId] },
         })
       ]);
 
@@ -251,42 +247,58 @@ export class ClientAuthService {
         throw new UnauthorizedException('Không tìm thấy thông tin người dùng');
       }
 
-      // lấy các ids để lấy các thông tin còn lại: pet template, room, item
-      const petTemplateIds = pets.map((pet) => pet.petTemplateId);
-      const roomIds = userRooms.map((room) => room.roomId);
-      const itemIds = userItems.map((item) => item.itemId);
+      const petTemplateIds = pets
+        .map((pet) => pet.petTemplateId)
+        .filter(Boolean);
 
-      const [petTemplates, rooms, items] = await Promise.all([
-        // Lấy thông tin chi tiết của pet templates
+      const petTemplateObjectIds = petTemplateIds
+        .filter((id) => Types.ObjectId.isValid(id))
+        .map((id) => new Types.ObjectId(id.toString()));
+
+      const roomIds = userRooms.map((room) => room.roomId);
+      // kho đồ user đang sở hữu
+      const inventoryItemIds = userItems.map((item) => item.itemId);
+
+      const [petTemplates, rooms] = await Promise.all([
         this.petTemplateModel.find({
-          _id: { $in: petTemplateIds },
+          $or: [
+            { _id: { $in: petTemplateObjectIds } },
+            { templateId: { $in: petTemplateIds.map((id) => id.toString()) } },
+          ],
           status: 'active',
           deleted: false
         }),
 
-        // Lấy thông tin gốc của các phòng mà user đang sở hữu (tên phòng, layout, slots...)
         this.roomModel.find({
           _id: { $in: roomIds },
           status: 'active',
           deleted: false
         }),
-
-        // Lấy thông tin gốc của các item trong kho (tên item, hình ảnh, loại, giá...)
-        this.itemModel.find({
-          _id: { $in: itemIds },
-          status: 'active',
-          deleted: false
-        })
       ]);
+
+      const defaultItemIds = rooms.flatMap((room) =>
+        Object.values(room.slots || {})
+          .map((slot: any) => slot?.defaultItemId)
+          .filter(Boolean)
+      );
+
+      // bao gồm item user đang sở hữu và các item mặc định trong room
+      const allItemIds = [...inventoryItemIds, ...defaultItemIds];
+
+      const items = await this.itemModel.find({
+        _id: { $in: allItemIds },
+        status: 'active',
+        deleted: false
+      });
 
       return {
         profile: user,
         pets: pets,
         petTemplates: petTemplates,
         userRooms: userRooms,
-        rooms: rooms,          
+        rooms: rooms,
         userItems: userItems,
-        items: items            
+        items: items
       };
 
     } catch (error) {

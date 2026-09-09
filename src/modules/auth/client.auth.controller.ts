@@ -110,5 +110,10 @@ export class ClientAuthController {
     if (!userId) {
       throw new UnauthorizedException('Phiên đăng nhập đã hết hạn');
     }
+    const data = await this.authService.getAllInfo(userId);
+    return {
+      data,
+      message: 'Lấy toàn bộ thông tin người dùng (profile + pet + room + items) thành công',
+    };
   }
 }
