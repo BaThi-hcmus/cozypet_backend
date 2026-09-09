@@ -1,59 +1,137 @@
 import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
+import { InjectConnection, InjectModel } from "@nestjs/mongoose";
 import { User, UserDocument } from "../user/schemas/user.schema";
-import { Model } from "mongoose";
+import { Connection, Model, Types } from "mongoose";
 import { RegisterDto } from "./dtos/register.dto";
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { JwtService } from "@nestjs/jwt";
 import { LoginDto } from "./dtos/login.dto";
+import { Room, RoomDocument } from "../room/schemas/room.schema";
+import { UserRoom, UserRoomDocument } from "../room/schemas/user-rooms.schema";
+import { UserItem, UserItemDocument } from "../item/schemas/user-items.schema";
+import { Item, ItemDocument } from "../item/schemas/item.schema";
+import { Pet, PetDocument } from "../pet/schemas/pet.schema";
+import { PetTemplate, PetTemplateDocument } from "../pet/schemas/pet-template.schema";
 
 @Injectable()
 export class ClientAuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
+    @InjectModel(UserRoom.name) private readonly userRoomModel: Model<UserRoomDocument>,
+    @InjectModel(UserItem.name) private readonly userItemModel: Model<UserItemDocument>,
+    @InjectModel(Item.name) private readonly itemModel: Model<ItemDocument>,
+    @InjectModel(Pet.name) private readonly petModel: Model<PetDocument>,
+    @InjectModel(PetTemplate.name) private readonly petTemplateModel: Model<PetTemplateDocument>,
+    @InjectConnection() private readonly connection: Connection,
     private jwtService: JwtService
   ) { }
 
   async register(registerDto: RegisterDto): Promise<any> {
-    // Kiểm tra có trùng email không
-    const emailExist = await this.userModel.findOne({
-      email: registerDto.email,
-      deleted: false
-    })
-    if (emailExist) {
-      throw new ConflictException('Email đã tồn tại trong hệ thống');
-    }
+    const session = await this.connection.startSession();
+    session.startTransaction();
 
-    // hash mật khẩu
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(registerDto.password, saltRounds);
-    registerDto.password = hashedPassword;
+    try {
+      const emailExist = await this.userModel.findOne({
+        email: registerDto.email,
+        deleted: false
+      }).session(session);
 
-    // tạo refresh token
-    const refreshToken = crypto.randomBytes(64).toString('hex');
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      if (emailExist) {
+        throw new ConflictException('Email đã tồn tại trong hệ thống');
+      }
 
-    const newUser = await this.userModel.create({
-      ...registerDto,
-      refreshToken: refreshToken,
-      refreshTokenExpiresAt: expiresAt
-    })
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(registerDto.password, saltRounds);
+      registerDto.password = hashedPassword;
 
-    // tạo access token là chuỗi JWT
-    const payload = {
-      sub: newUser._id,
-      fullName: newUser.fullName,
-      email: newUser.email
-    };
-    const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.ACCESS_TOKEN_SECRET || 'dksjksaljkjijljdiwis',
-      expiresIn: '15m'
-    })
+      // Tạo refresh token
+      const refreshToken = crypto.randomBytes(64).toString('hex');
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    return {
-      accessToken,
-      refreshToken
+      const newUserArray = await this.userModel.create(
+        [{
+          ...registerDto,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: expiresAt
+        }],
+        { session } 
+      );
+      const newUser = newUserArray[0]; 
+
+      // lấy ra các item free
+      const freeItems = await this.itemModel.find({
+        price: 0,
+        status: 'active',
+        deleted: false
+      }).session(session);
+      // lưu freeItems vào user-items
+      const newUserItems = freeItems.map((item) => {
+        return {
+          userId: newUser._id,
+          itemId: item._id,
+          quantity: 1
+        }
+      })
+      await this.userItemModel.insertMany(newUserItems, {session});
+
+      // lấy ra các room free
+      const freeRooms = await this.roomModel.find({
+        price: 0,
+        status: 'active',
+        deleted: false
+      }).session(session); 
+      // lưu freeRooms vào UserRoom
+      const newUserRooms: any = [];
+      for(const room of freeRooms) {
+        const newUserRoom = {
+          userId: newUser._id,
+          roomId: room._id,
+          isCurrent: room.code === 'LIVING_ROOM',
+          decorations: {}
+        };
+        const slotKeys = room.slots ? Object.keys(room.slots) : [];
+        for(const slotKey of slotKeys) {
+          const defaultItemId = room.slots[slotKey].defaultItemId;
+          if (!defaultItemId) continue;
+          const userItem = await this.userItemModel.findOne({
+            userId: newUser._id,
+            itemId: new Types.ObjectId(defaultItemId.toString()),
+          }).session(session);
+          if (userItem) {
+            newUserRoom.decorations[slotKey] = userItem._id;
+          }
+        }
+
+        newUserRooms.push(newUserRoom);
+      };
+
+      await this.userRoomModel.insertMany(newUserRooms, { session }); 
+
+      // gọi commit lưu vào DB
+      await session.commitTransaction();
+
+      const payload = {
+        sub: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email
+      };
+      const accessToken = this.jwtService.sign(payload, {
+        secret: process.env.ACCESS_TOKEN_SECRET || 'dksjksaljkjijljdiwis',
+        expiresIn: '15m'
+      });
+
+      return {
+        accessToken,
+        refreshToken
+      };
+    } catch (error) { 
+      // nếu có lỗi thì hủy tấc cả
+      await session.abortTransaction();
+      throw error; 
+    } finally {
+      session.endSession();
     }
   }
 
@@ -136,5 +214,83 @@ export class ClientAuthService {
         }
       }
     );
+  }
+
+  async getAllInfo(userId: string): Promise<any> {
+    try {
+      const [user, pets, userRooms, userItems] = await Promise.all([
+        // lấy thông tin user
+        this.userModel.findOne({
+          _id: userId,
+          status: 'active',
+          deleted: false
+        }).select('-password -refreshToken -refreshTokenExpiresAt -deleted'),
+
+        // lấy tấc cả pet của user
+        this.petModel.find({
+          userId: userId,
+          deleted: false
+        }),
+
+        // lấy tấc cả room của user
+        this.userRoomModel.find({
+          userId: userId,
+          status: 'active',
+          deleted: false
+        }),
+
+        // lấy tấc cả item của user
+        this.userItemModel.find({
+          userId: userId,
+          status: 'active',
+          deleted: false
+        })
+      ]);
+
+      if (!user) {
+        throw new UnauthorizedException('Không tìm thấy thông tin người dùng');
+      }
+
+      // lấy các ids để lấy các thông tin còn lại: pet template, room, item
+      const petTemplateIds = pets.map((pet) => pet.petTemplateId);
+      const roomIds = userRooms.map((room) => room.roomId);
+      const itemIds = userItems.map((item) => item.itemId);
+
+      const [petTemplates, rooms, items] = await Promise.all([
+        // Lấy thông tin chi tiết của pet templates
+        this.petTemplateModel.find({
+          _id: { $in: petTemplateIds },
+          status: 'active',
+          deleted: false
+        }),
+
+        // Lấy thông tin gốc của các phòng mà user đang sở hữu (tên phòng, layout, slots...)
+        this.roomModel.find({
+          _id: { $in: roomIds },
+          status: 'active',
+          deleted: false
+        }),
+
+        // Lấy thông tin gốc của các item trong kho (tên item, hình ảnh, loại, giá...)
+        this.itemModel.find({
+          _id: { $in: itemIds },
+          status: 'active',
+          deleted: false
+        })
+      ]);
+
+      return {
+        profile: user,
+        pets: pets,
+        petTemplates: petTemplates,
+        userRooms: userRooms,
+        rooms: rooms,          
+        userItems: userItems,
+        items: items            
+      };
+
+    } catch (error) {
+      throw error;
+    }
   }
 }

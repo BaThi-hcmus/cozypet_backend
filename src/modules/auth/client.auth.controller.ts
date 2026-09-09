@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Req, UnauthorizedException } from "@nestjs/common";
+import { Controller, Post, Body, Get, Res, Req, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { RegisterDto } from "./dtos/register.dto";
 import { ClientAuthService } from "./client.auth.service";
 import type { Request, Response } from "express";
@@ -6,6 +6,7 @@ import { LoginDto } from "./dtos/login.dto";
 import { InjectModel } from "@nestjs/mongoose";
 import { User, UserDocument } from "../user/schemas/user.schema";
 import { Model } from "mongoose";
+import { AccessTokenGuard } from "./guards/client.access-token.guard";
 
 @Controller('auth')
 export class ClientAuthController {
@@ -97,5 +98,17 @@ export class ClientAuthController {
     });
 
     return { message: 'Đăng xuất thành công' };
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('me')
+  async getAllInfo(
+    @Req() req: Request
+  ) {
+    // lấy id của user
+    const userId = req['user'].sub;
+    if (!userId) {
+      throw new UnauthorizedException('Phiên đăng nhập đã hết hạn');
+    }
   }
 }

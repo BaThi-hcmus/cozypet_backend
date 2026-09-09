@@ -12,7 +12,7 @@ export class UserRoom {
   roomId: Types.ObjectId;
 
   @Prop({ default: false })
-  isSelected: boolean;
+  isCurrent: boolean;
 
   @Prop({ type: Object, default: {} })
   decorations: Record<string, Types.ObjectId>;

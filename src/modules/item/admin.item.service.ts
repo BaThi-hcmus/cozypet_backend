@@ -189,12 +189,14 @@ export class ItemService {
     };
   }
 
-  async getCompatibleItems(type: string, category: string, slotType: string): Promise<ItemDocument[]> {
+  async getCompatibleItems(roomCode: string, type: string, category: string, slotType: string): Promise<ItemDocument[]> {
     // lấy theo type, category, slotType
     const items = await this.itemModel.find({
+      roomCode: roomCode,
       type: type,
       category: category,
       slotType: slotType,
+      price: 0,
       status: 'active',
       deleted: false
     });

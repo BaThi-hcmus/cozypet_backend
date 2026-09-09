@@ -93,11 +93,12 @@ export class ItemController {
 
   @Get('compatible')
   async getCompatibleItems(
+    @Query('roomCode') roomCode: string,
     @Query('type') type: string,
     @Query('category') category: string,
     @Query('slotType') slotType: string,
   ) {
-    const items = await this.itemService.getCompatibleItems(type, category, slotType);
+    const items = await this.itemService.getCompatibleItems(roomCode, type, category, slotType);
     return {
       data: items,
       message: 'Lấy thành công các vật phẩm theo bộ lọc',

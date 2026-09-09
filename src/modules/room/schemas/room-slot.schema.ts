@@ -33,7 +33,7 @@ export class RoomSlot {
   scaleFactor: number;
 
   @Prop({ type: Types.ObjectId, ref: 'Item', default: null })
-  defaultItemId: Types.ObjectId;
+  defaultItemId: Types.ObjectId | string;
 }
 
 export const RoomSlotSchema = SchemaFactory.createForClass(RoomSlot);

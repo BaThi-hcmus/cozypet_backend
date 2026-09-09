@@ -10,6 +10,10 @@ export class CreateItemDto {
   @IsString()
   name: string;
 
+  @IsNotEmpty({message: 'Mã phòng không được để trống'})
+  @IsString()
+  roomCode: string;
+
   @IsNotEmpty({ message: 'Loại vật phẩm không được để trống' })
   @IsIn(ITEM_TYPE_VALUES, {
     message: 'Loại vật phẩm không hợp lệ',

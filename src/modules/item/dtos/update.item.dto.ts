@@ -11,6 +11,10 @@ export class UpdateItemDto {
   name?: string;
 
   @IsOptional()
+  @IsString()
+  roomCode?: string;
+
+  @IsOptional()
   @IsIn(ITEM_TYPE_VALUES, {
     message: 'Loại vật phẩm không hợp lệ',
   })

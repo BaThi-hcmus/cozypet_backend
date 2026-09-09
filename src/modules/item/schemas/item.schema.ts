@@ -13,6 +13,9 @@ export class Item {
   @Prop({ required: true, trim: true })
   name: string;
 
+  @Prop({required: true})
+  roomCode: string;
+
   @Prop({
     required: true,
     enum: ITEM_TYPE_VALUES,
