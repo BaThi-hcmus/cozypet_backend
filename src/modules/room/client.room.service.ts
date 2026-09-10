@@ -52,4 +52,13 @@ export class ClientRoomService {
       itemsDefault: itemsDefault
     }
   }
+
+  async getAllRooms(): Promise<RoomDocument[]> {
+    const rooms = await this.roomModel.find({
+      deleted: false,
+      status: 'active'
+    })
+
+    return rooms;
+  }
 }
