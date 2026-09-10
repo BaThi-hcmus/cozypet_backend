@@ -17,7 +17,7 @@ import { Account, AccountSchema } from '../account/schemas/account.schema';
     MongooseModule.forFeature([
       { name: Room.name, schema: RoomSchema },
       { name: Item.name, schema: ItemSchema },
-      { name: Account.name, schema: AccountSchema}
+      { name: Account.name, schema: AccountSchema }
     ])
   ],
   controllers: [AdminRoomController, ClientRoomController],
