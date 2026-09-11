@@ -9,11 +9,13 @@ import { FilterStatus } from 'src/utils/filterStatus.util';
 import { Search } from 'src/utils/search.util';
 import { Pagination } from 'src/utils/pagination.util';
 import { Sort } from 'src/utils/sort.util';
+import { Item, ItemDocument } from '../item/schemas/item.schema';
 
 @Injectable()
 export class AdminRoomService {
   constructor(
     @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
+    @InjectModel(Item.name) private readonly itemModel: Model<ItemDocument>,
     private readonly filterStatusService: FilterStatus,
     private readonly searchService: Search,
     private readonly paginationService: Pagination,
@@ -183,5 +185,35 @@ export class AdminRoomService {
       { _id: { $in: bulkRoomActionDto.ids } },
       bulkRoomActionDto.payload,
     );
+  }
+
+  async getRoomByCode(
+    roomCode: string
+  ): Promise<any> {
+    // lấy ra room
+    const room = await this.roomModel.findOne({
+      code: roomCode,
+      status: 'active',
+      deleted: false
+    })
+    if (!room) {
+      throw new NotFoundException('Không tìm thấy phòng có roomCode hiện tại');
+    }
+
+    // lấy ra các item default của room
+    const defaultItemIds = Object.values(room.slots || {})
+      .map((slot: any) => slot?.defaultItemId)
+      .filter((id) => id != null);
+
+    const items = await this.itemModel.find({
+      _id: { $in: defaultItemIds },
+      deleted: false,
+      status: 'active'
+    })
+
+    return {
+      room,
+      items
+    }
   }
 }

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { PartConfig, PartConfigSchema } from './part-config.pet-template.schema';
 import { Offset } from './offset.pet-template.schema';
+import { RoomConfig, RoomConfigSchema } from './room-config.pet-template.schema';
 
 export type PetTemplateDocument = PetTemplate & Document;
 
@@ -19,16 +20,19 @@ export class PetTemplate {
   @Prop({ required: true })
   avatar!: string;
 
-  @Prop({ required: true })
-  globalZoom!: number;
-
-  @Prop({ required: true })
-  globalOffset!: Offset;
-
   @Prop({
-    type: Object
+    type: {
+      livingRoom: { type: RoomConfigSchema, required: true },
+      kitchen: { type: RoomConfigSchema, required: true },
+      bedRoom: { type: RoomConfigSchema, required: true },
+    },
+    required: true,
   })
-  layers!: Record<string, PartConfig>;
+  rooms!: {
+    livingRoom: RoomConfig;
+    kitchen: RoomConfig;
+    bedRoom: RoomConfig;
+  };
 
   @Prop({ required: true, trim: true })
   primaryColor!: string;

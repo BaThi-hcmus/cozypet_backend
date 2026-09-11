@@ -128,4 +128,20 @@ export class AdminRoomController {
       message: 'Đã cập nhật thành công các bản ghi phòng',
     };
   }
+
+  @Get(':roomCode')
+  async getRoomByCode(
+    @Param('roomCode') roomCode: string
+  ) {
+    if (!roomCode) {
+      throw new BadRequestException('room code không tồn tại');
+    }
+
+    const data = await this.roomService.getRoomByCode(roomCode);
+
+    return {
+      data,
+      message: 'Lấy thông tin room và item default thành công'
+    }
+  }
 }

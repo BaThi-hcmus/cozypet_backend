@@ -18,6 +18,8 @@ export const ITEM_CATEGORIES: Record<
     { value: 'shelf', label: 'Kệ' },
     { value: 'desk', label: 'Bàn làm việc' },
     { value: 'lamp', label: 'Đèn' },
+    { value: 'pillow', label: 'Gối nằm' },
+    { value: 'blanket', label: 'Mền' }
   ],
   decoration: [
     { value: 'picture', label: 'Tranh' },
