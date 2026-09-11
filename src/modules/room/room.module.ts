@@ -9,15 +9,19 @@ import { Item, ItemSchema } from '../item/schemas/item.schema';
 import { ClientRoomService } from './client.room.service';
 import { ClientRoomController } from './client.room.controller';
 import { Account, AccountSchema } from '../account/schemas/account.schema';
+import { UserRoom, UserRoomSchema } from './schemas/user-rooms.schema';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     ToolBarModule,
     CloudinaryModule,
+    JwtModule,
     MongooseModule.forFeature([
       { name: Room.name, schema: RoomSchema },
       { name: Item.name, schema: ItemSchema },
-      { name: Account.name, schema: AccountSchema }
+      { name: Account.name, schema: AccountSchema },
+      { name: UserRoom.name, schema: UserRoomSchema }
     ])
   ],
   controllers: [AdminRoomController, ClientRoomController],

@@ -1,14 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import { Room, RoomDocument } from './schemas/room.schema';
 import { Item, ItemDocument } from '../item/schemas/item.schema';
+import { ReplaceItemDto } from './dtos/client.replace-item.dto';
+import { UserRoom, UserRoomDocument } from './schemas/user-rooms.schema';
 
 @Injectable()
 export class ClientRoomService {
   constructor(
     @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
-    @InjectModel(Item.name) private readonly itemModel: Model<ItemDocument>
+    @InjectModel(Item.name) private readonly itemModel: Model<ItemDocument>,
+    @InjectModel(UserRoom.name) private readonly userRoomModel: Model<UserRoomDocument>
   ) { }
 
   async getRoomDefault(): Promise<any> {
@@ -60,5 +63,32 @@ export class ClientRoomService {
     })
 
     return rooms;
+  }
+
+  async replaceItemInRoom(
+    userId: string,
+    userRoomId: string,
+    replaceItemDtp: ReplaceItemDto
+  ): Promise<void> {
+    const { slotKey, insertItemId } = replaceItemDtp;
+    const userRoom = await this.userRoomModel.findOne({
+      _id: userRoomId,
+      userId: userId
+    })
+    if (!userRoom) {
+      throw new NotFoundException('Không tìm thấy user room id');
+    }
+
+    await this.userRoomModel.updateOne(
+      {
+        _id: userRoomId,
+        userId: userId
+      },
+      {
+        $set: {
+          [`decorations.${slotKey}`]: new Types.ObjectId(insertItemId)
+        }
+      }
+    );
   }
 }
