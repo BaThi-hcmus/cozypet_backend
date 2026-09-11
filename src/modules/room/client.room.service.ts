@@ -5,6 +5,7 @@ import { Room, RoomDocument } from './schemas/room.schema';
 import { Item, ItemDocument } from '../item/schemas/item.schema';
 import { ReplaceItemDto } from './dtos/client.replace-item.dto';
 import { UserRoom, UserRoomDocument } from './schemas/user-rooms.schema';
+import { Type } from 'class-transformer';
 
 @Injectable()
 export class ClientRoomService {
@@ -72,8 +73,8 @@ export class ClientRoomService {
   ): Promise<void> {
     const { slotKey, insertItemId } = replaceItemDtp;
     const userRoom = await this.userRoomModel.findOne({
-      _id: userRoomId,
-      userId: userId
+      _id: new Types.ObjectId(userRoomId),
+      userId: new Types.ObjectId(userId)
     })
     if (!userRoom) {
       throw new NotFoundException('Không tìm thấy user room id');
@@ -81,8 +82,8 @@ export class ClientRoomService {
 
     await this.userRoomModel.updateOne(
       {
-        _id: userRoomId,
-        userId: userId
+        _id: new Types.ObjectId(userRoomId),
+        userId: new Types.ObjectId(userId)
       },
       {
         $set: {

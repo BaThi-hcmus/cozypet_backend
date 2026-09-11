@@ -37,7 +37,7 @@ export class ClientRoomController {
     @Body() replaceItemDto: ReplaceItemDto
   ) {
     const userId = req['user'].sub;
-    if (userId) {
+    if (!userId) {
       throw new UnauthorizedException('Phiên đăng nhập đã hết hạn');
     }
 
@@ -45,7 +45,7 @@ export class ClientRoomController {
       throw new BadRequestException('Thiếu user room id');
     }
 
-    await this.replaceItemInRoom(userId, userRoomId, replaceItemDto);
+    await this.roomService.replaceItemInRoom(userId, userRoomId, replaceItemDto);
 
     return {
       message: 'Cập nhật vật phẩm thành công'
