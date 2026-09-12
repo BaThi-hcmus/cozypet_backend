@@ -1,8 +1,7 @@
 import { IsEnum, IsIn, IsOptional, IsString, IsObject, ValidateNested, IsNumber } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { PartConfigDto } from './part-config.pet-template.dto';
-import { LayersConfigDto } from './layers-config.pet-template.dto';
-import { OffsetDto } from './offset.pet-template.dto';
+import { RoomsConfigDto } from './rooms-config.pet-template.dto';
 
 export class UpdatePetTemplateDto {
   @IsOptional()
@@ -54,17 +53,17 @@ export class UpdatePetTemplateDto {
     if (typeof value === 'string') {
       try {
         const parsed = JSON.parse(value);
-        return plainToInstance(LayersConfigDto, parsed);
+        return plainToInstance(RoomsConfigDto, parsed);
       } catch (err) {
         return value;
       }
     }
     return value;
   })
-  @IsObject({ message: 'Layers phải là một object' })
+  @IsObject({ message: 'Rooms phải là một object' })
   @ValidateNested()
-  @Type(() => LayersConfigDto)
-  layers?: LayersConfigDto;
+  @Type(() => RoomsConfigDto)
+  rooms?: RoomsConfigDto;
 
   @IsOptional()
   @IsEnum(['active', 'inactive'], {
@@ -76,25 +75,4 @@ export class UpdatePetTemplateDto {
   @IsEnum(['active', 'inactive'])
   deleted?: boolean;
 
-  @IsOptional()
-  @Transform(({ value }) => (value != undefined ? Number(value) : value))
-  @IsNumber({}, { message: 'global zoom phải là số nguyên' })
-  globalZoom?: number;
-
-  @IsOptional()
-  @Transform(({ value }) => {
-    if (typeof value == 'string') {
-      try {
-        const parse = JSON.parse(value);
-        return plainToInstance(OffsetDto, parse);
-      } catch (error) {
-        return value;
-      }
-    }
-    return value;
-  })
-  @IsObject({ message: 'Global offset phải là một object' })
-  @ValidateNested()
-  @Type(() => OffsetDto)
-  globalOffset?: OffsetDto;
 }

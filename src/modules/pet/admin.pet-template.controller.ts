@@ -12,7 +12,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { AdminPetService } from './admin.pet-template.service';
 import { CreatePetTemplateDto } from './dtos/create.pet-template.dto';
 import { UpdatePetTemplateDto } from './dtos/update.pet-template.dto';
@@ -52,39 +52,22 @@ export class AdminPetController {
   }
 
   @Post('create')
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'avatar', maxCount: 1 },
-    { name: 'body', maxCount: 1 },
-    { name: 'head', maxCount: 1 },
-    { name: 'leftArm', maxCount: 1 },
-    { name: 'rightArm', maxCount: 1 },
-    { name: 'leftLeg', maxCount: 1 },
-    { name: 'rightLeg', maxCount: 1 },
-    { name: 'tail', maxCount: 1 },
-  ]))
+  @UseInterceptors(AnyFilesInterceptor())
   async createPetTemplate(
-    @UploadedFiles() files: {
-      avatar?: Express.Multer.File[];
-      body?: Express.Multer.File[];
-      head?: Express.Multer.File[];
-      leftArm?: Express.Multer.File[];
-      rightArm?: Express.Multer.File[];
-      leftLeg?: Express.Multer.File[];
-      rightLeg?: Express.Multer.File[];
-      tail?: Express.Multer.File[];
-    },
+    @UploadedFiles() files: Express.Multer.File[],
     @Body() createPetTemplateDto: CreatePetTemplateDto,
   ) {
-    if (!files.avatar?.[0]) {
+    const avatarFile = files.find(f => f.fieldname === 'avatar');
+    if (!avatarFile) {
       throw new BadRequestException('Vui lòng tải lên ảnh avatar cho mẫu pet');
     }
 
     const uploadTasks: any = [];
 
     // xử lý avatar
-    if (files.avatar && files.avatar[0]) {
+    if (avatarFile) {
       const avatarPromise = this.cloudinaryService
-        .uploadFile(files.avatar[0])
+        .uploadFile(avatarFile)
         .then((res) => {
           createPetTemplateDto.avatar = res.secure_url;
         });
@@ -92,25 +75,42 @@ export class AdminPetController {
     }
 
     // xử lý các bộ phận
+    const rooms = ['livingRoom', 'bedRoom', 'kitchen'];
     const parts = ['body', 'head', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg', 'tail'];
 
-    // Đảm bảo layers object tồn tại
-    if (!createPetTemplateDto.layers) {
-      createPetTemplateDto.layers = {};
+    if (!createPetTemplateDto.rooms) {
+      createPetTemplateDto.rooms = {
+        livingRoom: { layers: {}, globalZoom: 1, globalOffset: { x: 0, y: 0 } },
+        bedRoom: { layers: {}, globalZoom: 1, globalOffset: { x: 0, y: 0 } },
+        kitchen: { layers: {}, globalZoom: 1, globalOffset: { x: 0, y: 0 } },
+      };
     }
-    const layers = createPetTemplateDto.layers;
 
-    for (const part of parts) {
-      if (files[part] && files[part][0]) {
-        const partPromise = this.cloudinaryService
-          .uploadFile(files[part][0])
-          .then((res) => {
-            if (!layers[part]) {
-              layers[part] = {};
-            }
-            layers[part].url = res.secure_url;
-          })
-        uploadTasks.push(partPromise);
+    const roomsObj = createPetTemplateDto.rooms as any;
+
+    for (const room of rooms) {
+      if (!roomsObj[room]) {
+        roomsObj[room] = { layers: {}, globalZoom: 1, globalOffset: { x: 0, y: 0 } };
+      }
+      if (!roomsObj[room].layers) {
+        roomsObj[room].layers = {};
+      }
+      
+      for (const part of parts) {
+        const fieldName = `${room}_${part}`;
+        const partFile = files.find(f => f.fieldname === fieldName);
+        
+        if (partFile) {
+          const partPromise = this.cloudinaryService
+            .uploadFile(partFile)
+            .then((res) => {
+              if (!roomsObj[room].layers[part]) {
+                roomsObj[room].layers[part] = {};
+              }
+              roomsObj[room].layers[part].url = res.secure_url;
+            });
+          uploadTasks.push(partPromise);
+        }
       }
     }
 
@@ -121,8 +121,8 @@ export class AdminPetController {
     }
 
     await this.petTemplateService.createPetTemplate(createPetTemplateDto, {
-      buffer: files.avatar[0].buffer,
-      mimetype: files.avatar[0].mimetype,
+      buffer: avatarFile.buffer,
+      mimetype: avatarFile.mimetype,
     });
 
     return {
@@ -131,36 +131,19 @@ export class AdminPetController {
   }
 
   @Patch('update/:id')
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'avatar', maxCount: 1 },
-    { name: 'body', maxCount: 1 },
-    { name: 'head', maxCount: 1 },
-    { name: 'leftArm', maxCount: 1 },
-    { name: 'rightArm', maxCount: 1 },
-    { name: 'leftLeg', maxCount: 1 },
-    { name: 'rightLeg', maxCount: 1 },
-    { name: 'tail', maxCount: 1 },
-  ]))
+  @UseInterceptors(AnyFilesInterceptor())
   async updatePetTemplate(
-    @UploadedFiles() files: {
-      avatar?: Express.Multer.File[];
-      body?: Express.Multer.File[];
-      head?: Express.Multer.File[];
-      leftArm?: Express.Multer.File[];
-      rightArm?: Express.Multer.File[];
-      leftLeg?: Express.Multer.File[];
-      rightLeg?: Express.Multer.File[];
-      tail?: Express.Multer.File[];
-    },
+    @UploadedFiles() files: Express.Multer.File[],
     @Param('id') id: string,
     @Body() updatePetTemplateDto: UpdatePetTemplateDto,
   ) {
     const uploadTasks: any = [];
+    const avatarFile = files.find(f => f.fieldname === 'avatar');
 
     // xử lý avatar (nếu có upload file mới)
-    if (files?.avatar && files?.avatar?.[0]) {
+    if (avatarFile) {
       const avatarPromise = this.cloudinaryService
-        .uploadFile(files.avatar[0])
+        .uploadFile(avatarFile)
         .then((res) => {
           updatePetTemplateDto.avatar = res.secure_url;
         });
@@ -168,26 +151,42 @@ export class AdminPetController {
     }
 
     // xử lý các bộ phận
+    const rooms = ['livingRoom', 'bedRoom', 'kitchen'];
     const parts = ['body', 'head', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg', 'tail'];
 
-    // Đảm bảo layers object tồn tại
-    if (!updatePetTemplateDto.layers) {
-      updatePetTemplateDto.layers = {};
+    if (!updatePetTemplateDto.rooms) {
+      updatePetTemplateDto.rooms = {
+        livingRoom: { layers: {}, globalZoom: 1, globalOffset: { x: 0, y: 0 } },
+        bedRoom: { layers: {}, globalZoom: 1, globalOffset: { x: 0, y: 0 } },
+        kitchen: { layers: {}, globalZoom: 1, globalOffset: { x: 0, y: 0 } },
+      };
     }
-    const layers = updatePetTemplateDto.layers;
 
-    // upload các bộ phận (nếu admin có upload file mới)
-    for (const part of parts) {
-      if (files?.[part] && files?.[part]?.[0]) {
-        const partPromise = this.cloudinaryService
-          .uploadFile(files[part][0])
-          .then((res) => {
-            if (!layers[part]) {
-              layers[part] = {};
-            }
-            layers[part].url = res.secure_url;
-          })
-        uploadTasks.push(partPromise);
+    const roomsObj = updatePetTemplateDto.rooms as any;
+
+    for (const room of rooms) {
+      if (!roomsObj[room]) {
+        roomsObj[room] = { layers: {}, globalZoom: 1, globalOffset: { x: 0, y: 0 } };
+      }
+      if (!roomsObj[room].layers) {
+        roomsObj[room].layers = {};
+      }
+      
+      for (const part of parts) {
+        const fieldName = `${room}_${part}`;
+        const partFile = files.find(f => f.fieldname === fieldName);
+        
+        if (partFile) {
+          const partPromise = this.cloudinaryService
+            .uploadFile(partFile)
+            .then((res) => {
+              if (!roomsObj[room].layers[part]) {
+                roomsObj[room].layers[part] = {};
+              }
+              roomsObj[room].layers[part].url = res.secure_url;
+            });
+          uploadTasks.push(partPromise);
+        }
       }
     }
 
@@ -200,10 +199,10 @@ export class AdminPetController {
     await this.petTemplateService.updatePetTemplate(
       id,
       updatePetTemplateDto,
-      files?.avatar?.[0]
+      avatarFile
         ? {
-          buffer: files.avatar[0].buffer,
-          mimetype: files.avatar[0].mimetype,
+          buffer: avatarFile.buffer,
+          mimetype: avatarFile.mimetype,
         }
         : undefined,
     );

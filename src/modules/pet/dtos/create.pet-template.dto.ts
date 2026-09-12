@@ -1,8 +1,7 @@
 import { IsIn, IsNotEmpty, IsOptional, IsString, IsObject, ValidateNested, IsNumber } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { PartConfigDto } from './part-config.pet-template.dto';
-import { LayersConfigDto } from './layers-config.pet-template.dto';
-import { OffsetDto } from './offset.pet-template.dto';
+import { RoomsConfigDto } from './rooms-config.pet-template.dto';
 
 export class CreatePetTemplateDto {
   @IsNotEmpty({ message: 'Mã template không được để trống' })
@@ -55,37 +54,16 @@ export class CreatePetTemplateDto {
     if (typeof value === 'string') {
       try {
         const parsed = JSON.parse(value);
-        // chuyển thành instance của class LayersConfigDto
-        return plainToInstance(LayersConfigDto, parsed);
+        // chuyển thành instance của class RoomsConfigDto
+        return plainToInstance(RoomsConfigDto, parsed);
       } catch (err) {
         return value; // Nếu parse lỗi, giữ nguyên để class-validator xử lý tiếp
       }
     }
     return value;
   })
-  @IsObject({ message: 'Layers phải là một object chứa các bộ phận' })
+  @IsObject({ message: 'Rooms phải là một object chứa cấu hình các phòng' })
   @ValidateNested()
-  @Type(() => LayersConfigDto)
-  layers?: LayersConfigDto;
-
-  @IsNotEmpty({ message: 'global zoom không được để trống' })
-  @Transform(({ value }) => (value != undefined ? Number(value) : value))
-  @IsNumber({}, { message: 'global zoom phải là số nguyên' })
-  globalZoom: number;
-
-  @IsNotEmpty({ message: 'global offset không được để trống' })
-  @Transform(({ value }) => {
-    if (typeof value == 'string') {
-      try {
-        const parse = JSON.parse(value);
-        return plainToInstance(OffsetDto, parse);
-      } catch (error) {
-        return value;
-      }
-    }
-    return value;
-  })
-  @ValidateNested()
-  @Type(() => OffsetDto)
-  globalOffset: OffsetDto;
+  @Type(() => RoomsConfigDto)
+  rooms?: RoomsConfigDto;
 }
