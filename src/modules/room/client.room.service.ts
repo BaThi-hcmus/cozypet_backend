@@ -214,4 +214,21 @@ export class ClientRoomService {
       await session.endSession();
     }
   }
+
+  async changeIsCurrentRoom(
+    userId: string,
+    userRoomId: string
+  ): Promise<void> {
+    // chuyển tấc cả room về false
+    await this.userRoomModel.updateMany(
+      { userId: new Types.ObjectId(userId) },
+      { $set: { isCurrent: false } }
+    );
+
+    // chuyển phòng hiện tại thành true
+    await this.userRoomModel.updateOne(
+      { _id: new Types.ObjectId(userRoomId) },
+      { $set: { isCurrent: true } }
+    )
+  }
 }

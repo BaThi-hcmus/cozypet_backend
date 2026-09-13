@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Req, Body, UseGuards, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Param, Post, Req, Body, UseGuards, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ClientRoomService } from './client.room.service';
 import type { Request } from 'express';
 import { ReplaceItemDto } from './dtos/client.replace-item.dto';
@@ -67,6 +67,27 @@ export class ClientRoomController {
     return {
       data,
       message: 'Cập nhật dữ liệu và lấy dữ liệu thành công'
+    }
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post(':userRoomId/change-is-current-room')
+  async changeIsCurrentRoom(
+    @Req() req: Request,
+    @Param('userRoomId') userRoomId: string
+  ) {
+    const userId = req?.['user'].sub;
+    if (!userId) {
+      throw new UnauthorizedException('Phiên đăng nhập đã hết hạn');
+    }
+
+    if (!userRoomId) {
+      throw new NotFoundException('Không tìm thấy room hiện tại');
+    }
+
+    await this.roomService.changeIsCurrentRoom(userId, userRoomId);
+    return {
+      message: 'Đổi trạng thái phòng thành công'
     }
   }
 }
