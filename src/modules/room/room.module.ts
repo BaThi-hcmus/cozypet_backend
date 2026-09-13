@@ -11,6 +11,7 @@ import { ClientRoomController } from './client.room.controller';
 import { Account, AccountSchema } from '../account/schemas/account.schema';
 import { UserRoom, UserRoomSchema } from './schemas/user-rooms.schema';
 import { JwtModule } from '@nestjs/jwt';
+import { UserItem, UserItemSchema } from '../item/schemas/user-items.schema';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { JwtModule } from '@nestjs/jwt';
       { name: Room.name, schema: RoomSchema },
       { name: Item.name, schema: ItemSchema },
       { name: Account.name, schema: AccountSchema },
-      { name: UserRoom.name, schema: UserRoomSchema }
+      { name: UserRoom.name, schema: UserRoomSchema },
+      { name: UserItem.name, schema: UserItemSchema }
     ])
   ],
   controllers: [AdminRoomController, ClientRoomController],

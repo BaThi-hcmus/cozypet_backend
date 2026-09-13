@@ -51,4 +51,22 @@ export class ClientRoomController {
       message: 'Cập nhật vật phẩm thành công'
     }
   }
+
+  @UseGuards(AccessTokenGuard)
+  @Get(':roomCode')
+  async getRoomByCode(
+    @Req() req: Request,
+    @Param('roomCode') roomCode: string
+  ) {
+    const userId = req?.['user'].sub;
+    if (!userId) {
+      throw new UnauthorizedException('Phiên đăng nhập đã hết hạn')
+    }
+
+    const data = await this.roomService.getRoomByCode(roomCode, userId);
+    return {
+      data,
+      message: 'Cập nhật dữ liệu và lấy dữ liệu thành công'
+    }
+  }
 }

@@ -1,18 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId, Types } from 'mongoose';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { Connection, Model, ObjectId, Types } from 'mongoose';
 import { Room, RoomDocument } from './schemas/room.schema';
 import { Item, ItemDocument } from '../item/schemas/item.schema';
 import { ReplaceItemDto } from './dtos/client.replace-item.dto';
 import { UserRoom, UserRoomDocument } from './schemas/user-rooms.schema';
-import { Type } from 'class-transformer';
+import { UserItem, UserItemDocument } from '../item/schemas/user-items.schema';
 
 @Injectable()
 export class ClientRoomService {
   constructor(
     @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
     @InjectModel(Item.name) private readonly itemModel: Model<ItemDocument>,
-    @InjectModel(UserRoom.name) private readonly userRoomModel: Model<UserRoomDocument>
+    @InjectModel(UserRoom.name) private readonly userRoomModel: Model<UserRoomDocument>,
+    @InjectModel(UserItem.name) private readonly userItemModel: Model<UserItemDocument>,
+    @InjectConnection() private readonly connection: Connection
   ) { }
 
   async getRoomDefault(): Promise<any> {
@@ -91,5 +93,125 @@ export class ClientRoomService {
         }
       }
     );
+  }
+
+  async getRoomByCode(
+    roomCode: string,
+    userId: string
+  ): Promise<any> {
+    const room = await this.roomModel.findOne({
+      code: roomCode,
+      status: 'active',
+      deleted: false,
+      price: 0
+    });
+
+    if (!room) {
+      throw new NotFoundException('Room không tồn tại hoặc đây không phải room mặc định');
+    }
+
+    // Kiểm tra xem Database đã có userRoom này chưa
+    let existingUserRoom = await this.userRoomModel.findOne({
+      userId: new Types.ObjectId(userId),
+      roomId: room._id
+    });
+
+    // do dữ liệu từ zustand đã bị sửa đổi => cung cấp lại
+    if (existingUserRoom) {
+      const userItemIds = Object.values(existingUserRoom.decorations)
+        .filter(id => id != null);
+      const userItems = await this.userItemModel.find({
+        userId: new Types.ObjectId(userId),
+        itemId: { $in: userItemIds }
+      });
+      const items = await this.itemModel.find({
+        _id: { $in: userItems.map(ui => ui.itemId) },
+        status: 'active',
+        deleted: false
+      });
+
+      return {
+        room: room,
+        userRoom: existingUserRoom,
+        items: items,
+        userItems: userItems
+      };
+    }
+
+    // transaction
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      // Lấy các default item
+      const defaultItemIds = Object.values(room.slots || {})
+        .map(slot => slot.defaultItemId)
+        .filter(id => id != null);
+
+      const items = await this.itemModel.find({
+        _id: { $in: defaultItemIds },
+        status: 'active',
+        deleted: false
+      });
+
+      let newUserItems: any = [];
+      for (const id of defaultItemIds) {
+        const itemExist = items.find(item => item._id.toString() === id.toString());
+        if (!itemExist) continue;
+
+        newUserItems.push({
+          userId: new Types.ObjectId(userId),
+          itemId: itemExist._id,
+          quantity: 1
+        });
+      }
+
+      // Thêm user items
+      newUserItems = await this.userItemModel.insertMany(newUserItems, { session });
+
+      // Xử lý user room
+      let newUserRoom: any = {
+        userId: new Types.ObjectId(userId),
+        roomId: room._id,
+        isCurrent: true,  // mặc định cho user chọn room này luôn
+        decorations: {}
+      };
+      //cho các room khác về false
+      await this.userRoomModel.updateMany(
+        { userId: userId },
+        { $set: { isCurrent: false } },
+        { session }
+      )
+
+      const slotKeys = Object.keys(room.slots || {});
+      for (const slotKey of slotKeys) {
+        const defaultItemId = room.slots[slotKey]?.defaultItemId;
+        if (!defaultItemId) continue;
+
+        const userItem = newUserItems.find(ui => ui.itemId.toString() === defaultItemId.toString());
+        if (userItem) {
+          newUserRoom.decorations[slotKey] = userItem._id;
+        }
+      }
+
+      // Thêm user room
+      const createdUserRooms = await this.userRoomModel.create([newUserRoom], { session });
+      newUserRoom = createdUserRooms[0];
+
+      await session.commitTransaction();
+
+      return {
+        room: room,
+        userRoom: newUserRoom,
+        items: items,
+        userItems: newUserItems
+      };
+
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
   }
 }
