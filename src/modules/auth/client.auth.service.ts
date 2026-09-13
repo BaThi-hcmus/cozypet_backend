@@ -56,9 +56,9 @@ export class ClientAuthService {
           refreshToken: refreshToken,
           refreshTokenExpiresAt: expiresAt
         }],
-        { session } 
+        { session }
       );
-      const newUser = newUserArray[0]; 
+      const newUser = newUserArray[0];
 
       // lấy ra các item free
       const freeItems = await this.itemModel.find({
@@ -74,25 +74,30 @@ export class ClientAuthService {
           quantity: 1
         }
       })
-      await this.userItemModel.insertMany(newUserItems, {session});
+      await this.userItemModel.insertMany(newUserItems, { session });
 
       // lấy ra các room free
       const freeRooms = await this.roomModel.find({
         price: 0,
         status: 'active',
         deleted: false
-      }).session(session); 
+      }).session(session);
       // lưu freeRooms vào UserRoom
       const newUserRooms: any = [];
-      for(const room of freeRooms) {
+      for (const room of freeRooms) {
         const newUserRoom = {
           userId: newUser._id,
           roomId: room._id,
           isCurrent: room.code === 'LIVING_ROOM',
           decorations: {}
         };
+        // nếu là bed room thì sẽ có thêm thuộc tính isLightOn
+        if (room.code == 'BED_ROOM') {
+          newUserRoom[`isLightOn`] = false;
+        }
+
         const slotKeys = room.slots ? Object.keys(room.slots) : [];
-        for(const slotKey of slotKeys) {
+        for (const slotKey of slotKeys) {
           const defaultItemId = room.slots[slotKey].defaultItemId;
           if (!defaultItemId) continue;
           const userItem = await this.userItemModel.findOne({
@@ -107,7 +112,7 @@ export class ClientAuthService {
         newUserRooms.push(newUserRoom);
       };
 
-      await this.userRoomModel.insertMany(newUserRooms, { session }); 
+      await this.userRoomModel.insertMany(newUserRooms, { session });
 
       // gọi commit lưu vào DB
       await session.commitTransaction();
@@ -126,10 +131,10 @@ export class ClientAuthService {
         accessToken,
         refreshToken
       };
-    } catch (error) { 
+    } catch (error) {
       // nếu có lỗi thì hủy tấc cả
       await session.abortTransaction();
-      throw error; 
+      throw error;
     } finally {
       session.endSession();
     }

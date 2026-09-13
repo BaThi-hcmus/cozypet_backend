@@ -14,6 +14,10 @@ export class UserRoom {
   @Prop({ default: false })
   isCurrent: boolean;
 
+  // chỉ có bed room mới có trường này
+  @Prop({ type: Boolean })
+  isLightOn?: boolean;
+
   @Prop({ type: Object, default: {} })
   decorations: Record<string, Types.ObjectId>;
 }

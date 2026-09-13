@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model, ObjectId, Types } from 'mongoose';
 import { Room, RoomDocument } from './schemas/room.schema';
@@ -226,9 +226,48 @@ export class ClientRoomService {
     );
 
     // chuyển phòng hiện tại thành true
+    const roomExist = await this.userRoomModel.findOne({
+      _id: new Types.ObjectId(userRoomId),
+      userId: new Types.ObjectId(userId)
+    })
+    if (!roomExist) {
+      throw new NotFoundException('Không tìm thấy room hiện tại');
+    }
+
     await this.userRoomModel.updateOne(
-      { _id: new Types.ObjectId(userRoomId) },
+      {
+        _id: new Types.ObjectId(userRoomId),
+        userId: new Types.ObjectId(userId)
+      },
       { $set: { isCurrent: true } }
     )
+  }
+
+  async toggleLight(
+    userId: string,
+    userRoomId: string
+  ): Promise<void> {
+    const userRoomExist = await this.userRoomModel.findOne({
+      _id: new Types.ObjectId(userRoomId),
+      userId: new Types.ObjectId(userId)
+    })
+    if (!userRoomExist) {
+      throw new NotFoundException('Không tìm thấy room hiện tại');
+    }
+
+    // Kiểm tra xem có phải bed room không
+    const bedRoomExist = await this.roomModel.findOne({
+      code: 'BED_ROOM',
+      _id: userRoomExist.roomId,
+      status: 'active',
+      deleted: false
+    })
+    if (!bedRoomExist) {
+      throw new ConflictException('Đây không phải phòng ngủ');
+    }
+
+    const newStatusLight = userRoomExist?.isLightOn == false ? true : false;
+    userRoomExist.isLightOn = newStatusLight;
+    await userRoomExist.save();
   }
 }

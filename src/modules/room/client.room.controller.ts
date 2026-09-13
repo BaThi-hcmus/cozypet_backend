@@ -90,4 +90,25 @@ export class ClientRoomController {
       message: 'Đổi trạng thái phòng thành công'
     }
   }
+
+  @UseGuards(AccessTokenGuard)
+  @Post(':userRoomId/toggle-light')
+  async toggleLight(
+    @Req() req: Request,
+    @Param('userRoomId') userRoomId: string
+  ) {
+    const userId = req?.['user'].sub;
+    if (!userId) {
+      throw new UnauthorizedException('Phiên đăng nhập đã hết hạn');
+    }
+    if (!userRoomId) {
+      throw new NotFoundException('Không tìm thấy room hiện tại');
+    }
+
+    await this.roomService.toggleLight(userId, userRoomId);
+
+    return {
+      message: 'Đổi trạng thái bed room thành công'
+    }
+  }
 }

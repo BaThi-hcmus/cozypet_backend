@@ -19,7 +19,9 @@ export const ITEM_CATEGORIES: Record<
     { value: 'desk', label: 'Bàn làm việc' },
     { value: 'lamp', label: 'Đèn' },
     { value: 'pillow', label: 'Gối nằm' },
-    { value: 'blanket', label: 'Mền' }
+    { value: 'blanket', label: 'Mền' },
+    { value: 'nightstand', label: 'Tủ đầu giường' },
+    { value: 'nightlight', label: 'Đèn ngủ' }
   ],
   decoration: [
     { value: 'picture', label: 'Tranh' },
